@@ -1,0 +1,12 @@
+<!-- input_text.html -->
+<form method="POST">
+    {% csrf_token %}
+    <textarea name="text_input" placeholder="Enter your text here"></textarea>
+    <button type="submit">Submit</button>
+</form>
+
+{% if success %}
+    <p>Text has been successfully encoded and saved!</p>
+    <p>Original Text: {{ request.POST.text_input }}</p>
+    <p>Encoded Text (Base64): {{ encoded_text }}</p>
+{% endif %}

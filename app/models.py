@@ -6,4 +6,4 @@ class UserInput(models.Model):
     text = models.TextField()
 
     def __str__(self):
-        return self.text[:50]  # Return the first 50 characters of the text
+        return self.text[:50]
