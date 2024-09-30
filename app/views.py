@@ -1,10 +1,12 @@
 import base64
+import hashlib
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from .forms import UserRegistrationForm
 from .models import UserInput
 from django.contrib.auth import authenticate, login
 from .forms import UserLoginForm
+from .models import UserInput, UserProfile
 
 def register(request):
     if request.method == 'POST':
@@ -13,6 +15,7 @@ def register(request):
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
             user.save()
+            UserProfile.objects.create(user=user, encoding_method='base64')
             login(request, user)
             return redirect('input_text')
     else:
@@ -22,7 +25,13 @@ def register(request):
 def input_text(request):
     if request.method == 'POST':
         text_input = request.POST.get('text_input')
-        encoded_text = base64.b64encode(text_input.encode('utf-8')).decode('utf-8')
+        encoding_method = request.user.userprofile.encoding_method
+        if encoding_method == 'base64':
+            encoded_text = base64.b64encode(text_input.encode('utf-8')).decode('utf-8')
+        elif encoding_method == 'hash':
+            encoded_text = hashlib.sha256(text_input.encode('utf-8')).hexdigest()
+        else:
+            encoded_text = text_input
         UserInput.objects.create(user=request.user, text=encoded_text)
         return render(request, 'app/input_text.html', {'success': True, 'encoded_text': encoded_text})
     return render(request, 'app/input_text.html')
